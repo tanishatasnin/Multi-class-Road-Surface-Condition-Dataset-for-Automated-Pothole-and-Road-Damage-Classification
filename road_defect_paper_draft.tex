@@ -1,0 +1,540 @@
+\documentclass{article}
+
+\usepackage{graphicx} 
+\usepackage[margin=1in]{geometry}
+\usepackage{xurl} 
+\usepackage[colorlinks=true, urlcolor=blue, breaklinks=true]{hyperref}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage[super,comma]{natbib}
+\usepackage{makecell}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{threeparttable}
+\usepackage{fancyhdr}
+
+\title{A Multiclass Dataset of Annotated Road-Surface Damage Images and an Adaptive-Weighted Ensemble Baseline for Urban Pothole Classification}
+\author{}
+\date{}
+
+% Header settings
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{[Author1] et al.}
+\fancyhead[C]{RoadDamageSegCluster Dataset}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyhead[L]{[Author1] et al.}
+  \fancyhead[C]{RoadDamageSegCluster Dataset}
+  \fancyhead[R]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+}
+
+\begin{document}
+
+\maketitle
+
+\section*{Authors \& Affiliations}
+[Author 1]\textsuperscript{1,\textdagger}, 
+[Author 2]\textsuperscript{1}, 
+[Author 3]\textsuperscript{1}, 
+[Author 4]\textsuperscript{1}, 
+[Author 5]\textsuperscript{1}, 
+[Author 6]\textsuperscript{1},
+[Author 7]\textsuperscript{1,*}
+
+\vspace{0.3em}
+\noindent
+\textsuperscript{1}Computer Science and Engineering, United International University, Dhaka 1212, Bangladesh
+
+\vspace{0.5em}
+\noindent
+\textsuperscript{\textdagger}These authors contributed equally to this work.
+
+\vspace{0.3em}
+\noindent
+*Corresponding author(s). E-mail(s): [corresponding email]
+
+
+\noindent
+
+
+\section*{Abstract}
+In many developing countries, road-surface damage such as potholes, cracks, water-filled depressions and open manholes presents serious risks to traffic safety and accelerates pavement deterioration. Automated road-condition monitoring therefore depends on robust classifiers trained on well-annotated imagery. However, the creation of such systems is often hindered by the lack of datasets, captured in real, unconstrained road environments, that explicitly treat open manholes and water-filled potholes as first-class categories with coarse polygon masks. We introduce RoadDamageSegCluster, a dataset of annotated road-surface damage images captured in varied urban environments of Dhaka, Bangladesh, to overcome this limitation. It contains \textbf{3{,}154 images} from which \textbf{7{,}489 crops} were derived, belonging to six categories (Background, Cracks, Damaged\_Asphalt, Open\_Manhole, Potholes and Water\_Filled\_Potholes), all annotated with polygon-based masks and released in COCO format to support object detection, instance segmentation and classification problems. The dataset is divided into training (70\%), validation (15\%), and testing (15\%) subsets using source-image-level stratified sampling to prevent data leakage. The dataset was evaluated using an adaptive-weighted ensemble of ten deep backbones and each individual backbone. The adaptive ensemble achieves a test accuracy of \textbf{0.9113} for classification, outperforming the best single backbone (ConvNeXt-Tiny, 0.8982), and attains a statistically significant improvement over every member backbone (exact McNemar $p<0.05$). These results indicate that the dataset supports model development and evaluation across different architectures.
+
+\vspace{0.5em}
+\noindent
+\section*{Background \& Summary}
+The automatic recognition of objects in realistic environments is very important for computer vision applications such as monitoring of infrastructure, transportation and maintenance planning \cite{Maeda2018Road,Zaidi2021Survey}. Road-surface damage recognition is commonly formulated as object detection, image classification, and semantic or instance segmentation tasks. Object detection focuses on both the localization of damage in the image and its category assignment. Classification assigns class labels to the image. Pixel-level recognition in the form of semantic or instance segmentation offers detailed information about defects which can also be essential in complex backgrounds and for partial views of objects \cite{Maeda2018Road,Maeda2021GAN}. 
+
+With the increasing adoption of deep learning methods, there is a growing need for large, diverse, and well-annotated datasets to support model training and evaluation \cite{Arya2022RDD,Arya2024Global}. However, several challenges remain with road-damage recognition. These include variance in lighting, complexity of backgrounds, occlusions and class imbalance that could significantly degrade the performance and generalization of data-driven computer vision systems. These factors can significantly affect the performance and generalization ability of data-driven vision systems. Several datasets have been introduced to support road-damage recognition tasks. The RDD benchmark family \cite{Maeda2018Road,Maeda2021GAN} provides dashcam-based damage detection images from Japan, while RDD2020 and RDD2022 \cite{Arya2021Multi,Arya2022RDD} extend this to multi-national, multi-country detection and classification benchmarks used in the IEEE Big Data challenge series \cite{Arya2025Insights}. Street-view datasets such as SVRDD \cite{Ren2024SVRDD} add rich polygon annotations from Baidu street-view imagery in Beijing. Although these datasets provide valuable benchmarks, they are often limited to specific acquisition conditions and may not fully represent the variability of informal, monsoon-affected urban road environments with open manholes and water-filled potholes. To complement existing datasets, we introduce a custom dataset, RoadDamageSegCluster, which captures common road-surface damage in urban environments in Dhaka. The images were collected from busy roads, intersections and residential lanes in Dhaka, Bangladesh, reflecting real-world conditions such as mixed damage types, cluttered backgrounds and partial visibility of objects. These characteristics introduce additional complexity compared to controlled or semi-structured environments and provide a more challenging setting for road-damage recognition tasks.
+
+The dataset contains six categories: Background, Cracks, Damaged\_Asphalt, Open\_Manhole, Potholes and Water\_Filled\_Potholes. In this dataset, the Open\_Manhole class is scarce (126 of 7{,}489 crops), reflecting the rarity of open manholes in practice, and is preserved as a first-class label so that imbalance-aware methods can be studied rather than mis-assigned to a generic ``pothole'' category. A total of 3{,}154 source images with approximately 7{,}489 annotated crops are gathered in the dataset. All images are labeled based on the instance segmentation in a polygon format and are in COCO format. Images can be directly used in a segmentation task or converted to bounding boxes in an object detection task.
+
+By covering varied environmental and material properties, it is aimed that the RoadDamageSegCluster dataset can facilitate the development, evaluation, and benchmarking of computer vision models designed for detecting and classifying road-surface damage in unconstrained outdoor environments.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{
+>{\centering\arraybackslash}p{1.7cm} 
+>{\centering\arraybackslash}p{1.4cm}
+>{\centering\arraybackslash}p{1.7cm}
+p{3.3cm}  p{3.0cm}   
+>{\centering\arraybackslash}p{1.6cm}
+}
+\toprule
+\multicolumn{1}{c}{\textbf{Name}} & 
+\multicolumn{1}{c}{\textbf{Categories}} & 
+\multicolumn{1}{c}{\textbf{Images}} & 
+\multicolumn{1}{c}{\textbf{Annotation}} & 
+\multicolumn{1}{c}{\textbf{Comment}} & 
+\multicolumn{1}{c}{\textbf{Country}} \\
+\midrule
+\cite{Maeda2018Road} 
+& 8 
+& 9{,}053 
+& Bounding boxes 
+& Smartphone dashcam damage detection 
+& Japan \\
+
+\cite{Maeda2021GAN} 
+& 8 
+& 9{,}053 
+& Bounding boxes 
+& GAN-augmented road damage detection 
+& Japan \\
+
+\cite{Arya2021Multi} 
+& 4 
+& 26{,}620 
+& Bounding boxes 
+& Multi-country damage detection dataset 
+& India/Japan/Czech R.\\
+
+\cite{Arya2022RDD} 
+& 8 
+& 47{,}420 
+& Bounding boxes 
+& Multi-national benchmark (RDD2022) 
+& 6 countries \\
+
+\cite{Ren2024SVRDD} 
+& 10 
+& 8{,}000 
+& Bounding boxes + masks 
+& Baidu street-view pavement damage 
+& China (Beijing) \\
+
+\cite{Lin2022DARDD} 
+& 8 
+& 15{,}401 
+& Bounding boxes 
+& Domain-adaptive damage detection 
+& Japan/USA/India \\
+
+\textbf{Proposed dataset} \cite{moni2026wastesegcluster}
+& 6
+& 3{,}154 images (7{,}489 crops)
+& COCO-format polygon masks
+& Outdoor road dataset with Open\_Manhole and Water\_Filled first-class labels; source-image-level stratified split
+& Bangladesh \\
+
+\bottomrule
+\end{tabular}
+\caption{Comparative Analysis of Existing Road-Damage Datasets and the Proposed Dataset for Detection and Classification}
+\label{tab:road_datasets}
+\end{table}
+
+
+\section*{Methods}
+\subsection*{Experimental setup and data acquisition}
+The complete pipeline for the dataset construction and model training is presented in Fig.~\ref{fig3}. The entire process starts from collecting the raw road images, followed by preprocessing, data augmentation, annotation, dataset preparation, and model training. The pipeline ensures that the constructed dataset is consistent, diverse, and suitable for different computer vision tasks. The images were collected manually from different roads, intersections, and residential lanes in Dhaka, Bangladesh. The collected images were captured in uncontrollable outdoor environments that lead to a realistic view of images. Most of the images contain more than one damage item per frame, cluttered background and partly covered objects. Once the images were acquired they were moved to a workstation and those which were corrupt or near to similar were discarded to remove redundant images. The images after this stage go through preprocessing as presented in Fig.~\ref{fig3}. During preprocessing the format of the image was standardized, including automatic orientation correction, center-weighted crop, resize to a consistent size, and discarded any unwanted/blank images from the dataset. Later, several augmentation techniques are performed to make the dataset more diverse and robust. Data augmentation is a technique to create a more diverse dataset than to manually collect more data, thus reducing the need for an extremely large dataset for building a machine learning model. As stated, images are now ready for annotation using Roboflow. Here, the instance segmentation is done using the polygon-based approach, and Smart Polygon tools are used for interactive segmentation and the construction of efficient and accurate polygon masks, labeling each of the objects based on the category provided. Data was then prepared for training purposes and exported in the COCO format. The final dataset was then divided into training (70\%), validation (15\%), and testing (15\%) subsets at the source-image level. The prepared dataset was used for multiple learning tasks. Instance segmentation-style polygon masks enabled foreground crop extraction; these crops were used to train classification models, including ten deep backbones and an adaptive-weighted ensemble. Class-weighted loss functions and balanced sampling were applied to address class imbalance during training. The model performance was evaluated using standard metrics such as accuracy, precision, recall, and F1-score. A comparative analysis was conducted across different models to assess their effectiveness in handling real-world road-damage recognition scenarios. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/RoadDamage_pipeline.png}
+\caption{Overview of the RoadDamageSegCluster pipeline}
+\label{fig3}
+\end{figure}
+
+\subsection*{Distribution and definitions of classes} 
+A six-class taxonomy was used: Background, Cracks, Damaged\_Asphalt, Open\_Manhole, Potholes and Water\_Filled\_Potholes. The Open\_Manhole class is intrinsically rare in the collection sites yet visually distinct; it is retained as a first-class label to support the study of class imbalance \cite{Arya2024Global,Arya2022RDD}. Because real-world road scenes often contain clutter, overlap, occlusion and variable lighting, fine-grained separation of damage subtypes was applied where visually consistent, and a broad Background rejection class was retained to suppress false positives on intact surfaces \cite{Maeda2018Road,Arya2021Multi}. The dataset as exported from Roboflow contains six meaningful waste labels. The crop counts per class are reported in Table~\ref{tab:classes}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{cllp{6.5cm}}
+\toprule
+\textbf{Remapped ID} & \textbf{Class Name}  & Count &
+\textbf{Representative Damage Types} \\
+\midrule
+0 & Background              & 1{,}248 &
+Intact asphalt, road furniture, clean surface \\
+1 & Cracks                  & 1{,}689 &
+Longitudinal/transverse cracks, alligator cracking \\
+2 & Damaged\_Asphalt        & 1{,}830 &
+Localized asphalt deformation, ravelling, surface distress \\
+3 & Open\_Manhole           &   126 &
+Exposed maintenance/manhole covers \\
+4 & Potholes                & 1{,}324 &
+Dry potholes and depressions \\
+5 & Water\_Filled\_Potholes & 1{,}272 &
+Potholes filled with water \\
+\bottomrule
+\end{tabular}
+\caption{Retained Damage Category Definitions}
+\label{tab:classes}
+\end{table}
+
+\subsection*{Annotation procedure} 
+Annotation was carried out in Roboflow, which was used to organize images, manage labels, apply iterative updates to the dataset and export annotations in standard formats. Images have been annotated as polygon masks for the six target classes. For each image, annotators labeled the visible damage items and used the initial object mask incorporated through Roboflow's Smart Polygon tool to perform click-based instant segmentation assistance, and then masks were edited with object boundaries to the visible object extent. This workflow saves tracing effort for irregularly shaped items and helps to support consistent boundaries of heterogeneous classes. Those objects that were ambiguous, severely occluded, or outside of the target taxonomy were not labeled to avoid uncertain ground truth.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/arch.pdf}
+\caption{Polygon-based annotation workflow for road-damage segmentation in Roboflow}
+\label{fig4}
+\end{figure}
+
+\subsection*{Quality control} 
+Quality control was conducted through multiple reviews of annotated images in order to look for missing annotations, inconsistencies in classes, and inaccuracies in boundaries. Identified problems were corrected in Roboflow before final export and counts of classes were monitored to ensure coverage of all six classes.
+
+\subsection*{Data Preprocessing and Augmentation}
+
+\subsubsection*{Dataset Acquisition and Platform-Level Preprocessing}
+
+During the creation of this dataset, Roboflow processing prepared the source images, and the final annotations used in the notebooks contain 7{,}489 crops across six classes. Before exporting the dataset, Roboflow applied several preprocessing steps to make all images consistent and uniform:
+
+\begin{enumerate}[leftmargin=2.5em, label=(\roman*)]
+\item \textbf{Auto-orientation correction.} The images have been rotated using their metadata so the data appear in the correct direction, which helps the model learn from properly aligned data.
+\item \textbf{Centre-focused static crop.} The images have been cropped to keep the middle area because this part usually contains the main object and removes unnecessary background from the data.
+\item \textbf{Aspect-ratio-preserving resize.} The images have been resized to a consistent frame without changing their shape so all the data has the same size and no distortion happens.
+\item \textbf{Null-annotation filtering.} The images without valid labels have been removed so the model does not learn from empty or incorrect data.
+\end{enumerate}
+The exported dataset has included all the required data such as the images, the COCO annotation files and the class mapping so that labels can be read correctly in every experiment. This has helped keep the data organised and consistent during training and evaluation. In COCO segmentation each object in an image has been represented using a list of polygon points. These points have defined the exact shape of the object by marking its boundary in the image:
+\[
+  \mathrm{polygon}_i = [x_1,\,y_1;\;x_2,\,y_2;\;\ldots;\;x_n,\,y_n]
+\]
+In this equation each pair $(x, y)$ has represented a point on the object boundary and all coordinates have been given in pixel values based on the image size. By connecting these points the full shape of the object has been formed, which allows the model to learn precise object outlines instead of just simple boxes. In some cases an annotation has not included a polygon but only a bounding box defined by position and size $(x, y, w, h)$. To handle this, a rectangular shape has been created from the box so that the data still includes a usable mask.
+
+\subsubsection*{Foreground Region Extraction}\label{sec:region_extract}
+The classification models used a method to extract only the important object regions from each image in the RoadDamageSegCluster dataset. This step has helped the model focus on the actual damage objects instead of the full background. Each object mask has first been converted into a binary mask $\mathbf{M}_a \in \{0,1\}^{H \times W}$ where the value 1 has represented the object area and 0 has represented the background. This mask has then been applied to the original image to keep only the object region:
+\[
+  \mathbf{R}_a = \mathbf{I} \odot \mathbf{M}_a^{(\uparrow 3)}
+\]
+In this equation, $\mathbf{I} \in \mathbb{R}^{H \times W \times 3}$ has represented the original RGB image and $\mathbf{M}_a^{(\uparrow 3)}$ has represented the mask expanded across three channels to match the image format. The symbol $\odot$ has represented element-wise multiplication. As a result only the object region has remained visible while the background has been removed. The extracted regions have then been saved as separate images based on their class labels, resized to $224\times224$ and normalised with ImageNet statistics. For the Background class, random non-overlapping $224\times224$ crops were extracted from regions of the images with no annotation overlap, matched approximately in count to the average class size. At the same time a mapping called \texttt{region\_to\_source} has been stored to keep track of which original image each region has come from. This has helped prevent data leakage when splitting the dataset into training, validation and test sets.
+
+\subsubsection*{Stratified Image-Level Re-partitioning}
+\label{sec:stratified_split}
+The proposed dataset \cite{moni2026wastesegcluster} has not used the default Roboflow split directly because it can place related samples from the same original image into different sets. This can lead to data leakage where the model has already seen similar content during training and then performs unrealistically well during evaluation. To avoid this issue all exported data has been merged first and then a new split has been created at the image level.
+Let $\mathcal{I}$ represent the full set of images and $\mathcal{A}$ represent all annotations. Each image has been assigned a main class label based on the most frequent object category it contains:
+\[
+  \ell(i) \;=\;
+  \arg\max_{k \in \mathcal{C}}
+  \bigl|\{a \in \mathcal{A} \mid
+  a.\texttt{image\_id}=i,\;
+  a.\texttt{category\_id}=k\}\bigr|
+\]
+In this equation $\ell(i)$ has represented the label of image $i$. The expression has counted how many times each class $k$ appears in that image and has selected the class with the highest count. This step has helped group images based on their dominant content, which is important for balanced splitting. A two-stage splitting process has then been applied using StratifiedShuffleSplit with a fixed random state (seed 42). In the first stage, 15\% of the images have been selected for the test set. In the second stage, 17.65\% of the remaining images (\texttt{VAL\_SPLIT}=0.1765) has been taken to create the validation set while the rest has been used for training. This approach has ensured that each split has a similar distribution of classes. This method has been used because it keeps all samples from the same image together in one split, which prevents leakage and ensures fair evaluation. At the same time stratification has maintained class balance so that the model does not become biased toward one class. The final split has produced 5{,}248 training crops (2{,}206 source images), 1{,}102 validation crops (474 source images) and 1{,}139 test crops (474 source images). These sets have remained completely separate:
+\[
+  \mathcal{I}_{\text{train}} \cap \mathcal{I}_{\text{val}}   = \emptyset,
+  \qquad
+  \mathcal{I}_{\text{train}} \cap \mathcal{I}_{\text{test}}  = \emptyset,
+  \qquad
+  \mathcal{I}_{\text{val}}   \cap \mathcal{I}_{\text{test}}  = \emptyset
+\]
+This means no image has appeared in more than one split which has ensured a clean and reliable evaluation process. The overall dataset has also shown class imbalance where Damaged\_Asphalt has appeared most frequently. This observation has supported the need for balanced sampling and training strategies in later stages.
+
+\subsubsection*{Class Distribution Analysis and Imbalance Characterisation}
+\label{sec:class_dist}
+The distribution of crops across the $K$ retained categories has been characterised by three quantities computed over the merged annotation set $\mathcal{A}$:
+\begin{align}
+  N_k  &= \bigl|\{a \in \mathcal{A} \mid a.\texttt{category\_id}=k\}\bigr|
+         && \text{(per-class crop count)} \label{eq:Nk}\\[4pt]
+  p_k  &= \frac{N_k}{\displaystyle\sum_{j=0}^{K-1} N_j} \times 100
+         && \text{(class frequency, \%)} \label{eq:pk}\\[4pt]
+  \rho &= \frac{N_{\max}}{N_{\min}}
+         && \text{(imbalance ratio)} \label{eq:rho}
+\end{align}
+As quantified by Eq.~\eqref{eq:rho}, the dataset has exhibited a marked class imbalance (\rho$\approx14.5$), with Damaged\_Asphalt forming the largest category (1{,}830 crops) and Open\_Manhole the smallest (126 crops). This imbalance has justified the use of weighted losses and weighted sampling in the downstream model pipelines.
+
+\subsection*{Dataset Characteristics and Statistics}
+\subsubsection*{Occlusion and Truncation Robustness Analysis}
+This study examined the robustness of the trained models to occlusion and truncation, as illustrated in Fig.~\ref{fig:occ_example}. Occlusion has referred to parts of the object being hidden, while truncation has referred to objects being cut by image boundaries during cropping. To simulate partial visibility, random image fractions were corrupted with occluding patches in a Monte-Carlo fashion (random-occlusion robustness), and accuracy was measured as an increasing fraction of the image was cropped centrally and resized back to $224\times224$ (truncation robustness). Over 80 test samples (means of two trials) the ensemble maintained accuracy of 1.00 from 0\% up to 60\% occlusion and truncation, keeping accuracy $\geq 90\%$ up to 60\% occlusion. These results indicate that the trained models degrade gracefully under partial visibility, which is critical for real deployment where potholes are frequently partially visible.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{figures/occlusion_robustness.png}
+    \caption{Occlusion and truncation robustness of the adaptive ensemble}
+    \label{fig:occ_example}
+\end{figure}
+
+\subsubsection*{Single and Multi-object Analysis}
+This study analyzed the distribution of single-object and multi-object images in the RoadDamageSegCluster dataset, computed over the 3{,}154 source images. Single-object scenes contained only one labeled instance, while multi-object scenes contained multiple labels within the same scene. In the single-object group (363 samples, mean 1.00 object per image), the ensemble achieved an accuracy of 0.9394, outperforming the best base model (0.9256). In the multi-object group (776 samples, mean \approx3.94 objects per image), the ensemble achieved 0.8982 versus 0.8853 for the best base model. These results indicate that the dataset has effectively captured both isolated and clustered damage conditions, and that the ensemble remains robust as scene clutter increases.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.72\textwidth]{figures/single_multi_object_accuracy.png}
+    \caption{Single-object and multi-object scene analysis in RoadDamageSegCluster}
+    \label{fig:single_multi}
+\end{figure}
+
+
+\section*{Data Record}
+\subsubsection*{Folder structure}
+This study organized the RoadDamageSegCluster dataset into training, validation and test sets with a 70\% / 15\% / 15\% split as shown in Fig.~\ref{fig:folder_structure}. Each subset contained image files and a COCO-format annotation file. The consistent folder structure improved dataset organization, reduced preprocessing complexity and supported compatibility with standard machine learning pipelines.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.63\textwidth]{figures/folder_structure.png}
+\caption{Folder structure of the RoadDamageSegCluster dataset}
+\label{fig:folder_structure}
+\end{figure}
+
+
+\section*{Evaluation Metrics}
+This study evaluated the RoadDamageSegCluster dataset using task-specific metrics for each type of model. For the classification models and the adaptive ensemble, the evaluation used accuracy, macro precision, macro recall, macro F1-score, weighted F1-score, class-wise precision, class-wise recall and class-wise F1-score. The overall classification results are reported in Table~\ref{tab:overall_model_performance}, while the class-wise performance is reported in Table~\ref{tab:per_class_model_performance}. Statistical significance was assessed using a paired-bootstrap 95\% confidence interval and the exact McNemar test, as reported in Table~\ref{tab:statistical}. The adaptive ensemble reflects a combination scheme rather than a fourth standalone classifier, so its evaluation additionally includes the ensembling-ablation comparison in Table~\ref{tab:ablation}.
+
+\subsection*{Result Analysis}
+The results showed that the adaptive ensemble achieved the strongest overall classification performance on the RoadDamageSegCluster dataset, with a test accuracy of \textbf{0.9113} (95\% CI [89.46, 92.80]), as shown in Table~\ref{tab:overall_model_performance}. The best single backbone (ConvNeXt-Tiny) achieved 0.8982 and a macro F1 of 0.91, and the exact McNemar test confirmed the ensemble's improvement over every member backbone ($p<0.05$ in all cases; $p=0.0041$ versus ConvNeXt-Tiny). The per-class results in Table~\ref{tab:per_class_model_performance} showed strong background and crack recognition for the best single backbone, while the Potholes class attained the lowest F1 (0.81), reflecting the difficulty of separating dry potholes from water-filled potholes and from open manholes. The statistical results in Table~\ref{tab:statistical} indicate that the ensemble's 91.13\% accuracy is a statistically significant improvement of +1.31 percentage points over the best single backbone. Overall, the adaptive ensemble provided the most reliable classification performance, while the individual backbones provided competitive baselines across the six classes; per-class reports for the full ensemble are produced by the released notebook's evaluation module.
+
+\begin{table}[ht]
+\centering
+\caption{Overall performance comparison of the evaluated models}
+\label{tab:overall_model_performance}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.30}
+\begin{tabular}{
+  l
+  l
+  c
+  c
+  c
+  c
+  c
+  c
+}
+\toprule
+\textbf{Model} 
+& \textbf{Task} 
+& \makecell{\textbf{No. of}\\\textbf{Samples}} 
+& \textbf{Accuracy} 
+& \makecell{\textbf{Macro}\\\textbf{Precision}} 
+& \makecell{\textbf{Macro}\\\textbf{Recall}} 
+& \makecell{\textbf{Macro}\\\textbf{F1}} 
+& \makecell{\textbf{Weighted}\\\textbf{F1}} \\
+\toprule
+ConvNeXt-Tiny (best base) 
+& Classification 
+& 1139 
+& 0.8982 
+& 0.91 
+& 0.90 
+& 0.91 
+& 0.90 \\
+\midrule
+Adaptive Ensemble 
+& Classification 
+& 1139 
+& \textbf{0.9113} 
+& -- 
+& -- 
+& \makecell{(per-class\\(notebook))} 
+& \makecell{(per-class\\(notebook))} \\
+\midrule
+ViT-Small 
+& Classification 
+& 1139 
+& 0.8780 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+ViT-Base 
+& Classification 
+& 1139 
+& 0.8674 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+DeiT-Small 
+& Classification 
+& 1139 
+& 0.8762 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+DeiT-Base 
+& Classification 
+& 1139 
+& 0.8797 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+Swin-Tiny 
+& Classification 
+& 1139 
+& 0.8964 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+MaxViT-Tiny 
+& Classification 
+& 1139 
+& 0.8964 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+MobileNetV3-Small 
+& Classification 
+& 1139 
+& 0.8033 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+EfficientNet-B0 
+& Classification 
+& 1139 
+& 0.7006 
+& -- 
+& -- 
+& -- 
+& -- \\
+\midrule
+ResNet50 
+& Classification 
+& 1139 
+& 0.8183 
+& -- 
+& -- 
+& -- 
+& -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-class performance of the best single backbone on the test set (1{,}139 crops)}
+\label{tab:per_class_model_performance}
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Model} & \textbf{Class} & \textbf{Support} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\midrule
+\multirow{6}{*}{ConvNeXt-Tiny (best base)}
+& Background             & 197 & 1.000000 & 1.00 & 1.00 & 1.00 \\
+& Cracks                 & 218 & 0.970000 & 0.97 & 0.97 & 0.97 \\
+& Damaged\_Asphalt       & 272 & 0.850000 & 0.82 & 0.85 & 0.84 \\
+& Open\_Manhole          & 17  & 0.880000 & 0.94 & 0.88 & 0.91 \\
+& Potholes               & 231 & 0.820000 & 0.80 & 0.82 & 0.81 \\
+& Water\_Filled\_Potholes & 204 & 0.880000 & 0.94 & 0.88 & 0.91 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Statistical analysis: paired-bootstrap 95\% confidence interval and exact McNemar test}
+\label{tab:statistical}
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Test Acc.} & \textbf{95\% CI low} & \textbf{95\% CI high} & \textbf{McNemar $p$ (vs.\ ensemble)} \\
+\toprule
+ViT-Small         & 0.877963 & 0.8586 & 0.8964 & $<0.0001$ \\
+ViT-Base          & 0.867428 & 0.8481 & 0.8859 & $<0.0001$ \\
+DeiT-Small        & 0.876207 & 0.8569 & 0.8955 & $<0.0001$ \\
+DeiT-Base         & 0.879719 & 0.8595 & 0.8982 & $0.0001$ \\
+Swin-Tiny         & 0.896400 & 0.8780 & 0.9131 & $0.0498$ \\
+ConvNeXt-Tiny     & 0.898156 & 0.8806 & 0.9166 & $0.0041$ \\
+MobileNetV3-Small & 0.803336 & 0.7796 & 0.8262 & $<0.0001$ \\
+EfficientNet-B0   & 0.700615 & 0.6743 & 0.7296 & $<0.0001$ \\
+ResNet50          & 0.818262 & 0.7954 & 0.8411 & $<0.0001$ \\
+MaxViT-Tiny       & 0.896400 & 0.8780 & 0.9131 & $0.0430$ \\
+Adaptive Ensemble & \textbf{0.911326} & \textbf{0.8946} & \textbf{0.9280} & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Ablation study of ensemble combination methods}
+\label{tab:ablation}
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lc}
+\toprule
+\textbf{Method} & \textbf{Test Accuracy} \\
+\toprule
+Random chance (baseline)    & 0.167 \\
+Majority class (baseline)   & 0.239 \\
+Best single model           & 0.8982 \\
+Mean individual model       & 0.8514 \\
+Majority voting             & 0.9096 \\
+Simple average              & 0.9131 \\
+Weighted average            & 0.9122 \\
+\textbf{Adaptive ensemble}  & \textbf{0.9113} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{Usage Notes}
+The RoadDamageSegCluster dataset is provided in COCO segmentation format, making it directly compatible with widely used computer vision frameworks such as PyTorch, TensorFlow and Detectron2. The dataset can be loaded using standard COCO APIs, where images and annotations are linked through the provided JSON files. Researchers can utilize the dataset for tasks such as object detection, instance segmentation, and multi-class classification without requiring additional format conversion. It is also worth noting that the dataset shows a marked class imbalance where most of the annotations belong to the Damaged\_Asphalt category, while Open\_Manhole is extremely rare. Such class imbalance will affect training of the model and could bias the prediction to be more in favor of the most represented classes. Class weighting, data re-sampling or data augmentation methods could be implemented to counteract this class imbalance based on the application requirements. Users should always perform the train/validation/test split at the source-image level to avoid leakage. The dataset also includes real-world challenges such as occlusions, varying lighting conditions, background clutter, and visually similar categories (e.g., Potholes and Water\_Filled\_Potholes), which may affect model performance. The dataset is well suited to developing and benchmarking robust road-damage recognition systems under outdoor conditions, aiding further research in pavement monitoring, intelligent transportation and practical use of computer vision models. 
+
+\section*{Data Availability}
+The dataset used in this study is publicly available in a data repository accompanying this submission. All images and associated annotations required to reproduce the experiments and evaluation results can be accessed through this repository, which ensures long-term accessibility and persistent storage of the dataset. Researchers and practitioners may download the dataset from the provided repository link to support transparency, reproducibility and further research in automated road-damage detection and classification.
+
+\section*{Code Availability}
+All code within this study has been made available in notebook format and is available on the project GitHub repository, which supports transparency, reproducibility and further research development. The Roboflow API key is read from the \texttt{ROBOFLOW\_API\_KEY} environment variable and is not committed to the repository.
+
+
+\section*{Overview of RoadDamageSegCluster Dataset}
+The RoadDamageSegCluster dataset was created to provide a representation of road-surface damage in real-world outdoor environments characterized by illumination, background complexity, viewpoint and object appearance variations. The dataset consists of 3{,}154 unconstrained source images and includes 7{,}489 crops from six classes: Background, Cracks, Damaged\_Asphalt, Open\_Manhole, Potholes and Water\_Filled\_Potholes. The class distribution consists of Damaged\_Asphalt (24.4\%, 1{,}830), Cracks (22.6\%, 1{,}689), Potholes (17.7\%, 1{,}324), Water\_Filled\_Potholes (17.0\%, 1{,}272), Background (16.7\%, 1{,}248) and Open\_Manhole (1.7\%, 126). All annotations are provided in COCO format with polygon-based instance segmentation masks. To maintain the reliability of the annotation, objects that were visually ambiguous, outside the taxonomy or severely occluded were removed. The dataset contains natural variability, such as partial occlusion, truncation, and multi-object scenes, typical of the cluttered environment of urban road surfaces in Bangladesh. This mechanism allows for reuse for classification, object detection and instance segmentation, all under the same labeling system.
+
+
+\makeatletter
+\renewcommand{\@biblabel}[1]{#1.\hfill}
+\makeatother
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\section*{Acknowledgements}
+The authors acknowledge United International University for its support in conducting this study.
+
+\section*{Author Contributions}
+R.R.R. and K.M. contributed equally to this work and share first authorship (adapt to actual authors). [Author 1]: Conceptualization, Methodology, Formal Analysis, Data Curation, Writing Original Draft, Writing--Review \& Editing. [Author 2]: Conceptualization, Methodology, Data Curation, Formal Analysis, Writing Original Draft, Writing--Review \& Editing. [Author 3]: Data Curation, Visualization, Writing--Original Draft, Annotation. [Author 4]: Data Curation, Formal Analysis, Visualization, Coding. [Author 5]: Investigation, Data Curation, Annotation. [Author 6]: Visualization, Validation and Investigation. [Author 7]: Writing--Review \& Editing, Validation, Supervision.
+All authors have read and approved the final version of the manuscript.
+
+\section*{Funding}
+The Institute for Advanced Research (IAR) Publication Grant of United International University has funded this research, Ref. No.: IAR-2026-Pub-xxx.
+
+\section*{Competing Interests}
+The authors declare no conflicts of interest.
+
+\end{document}
